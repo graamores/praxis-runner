@@ -1,0 +1,56 @@
+# Ejemplo del formato de los pasos verificables de un taller (docs/RUNNER.md, «Formato de las comprobaciones»).
+# La app compone cada petición a POST /check con {id: paso.id, ...paso.comprobacion}. Si el runner no
+# está, el alumno pega la salida de `comando` y se evalúa con las mismas reglas (plan B).
+id: EJEMPLO-taller
+titulo: Tu ordenador (ejemplo)
+pasos:
+  - id: git-instalado
+    texto: Comprueba que Git está instalado.
+    comando: git --version
+    comprobacion: {tipo: herramienta, nombre: git, version_min: "2.30"}
+    pegado_ejemplo: "git version 2.53.0.windows.3"
+
+  - id: carpeta-proyecto
+    texto: Crea la carpeta del proyecto y entra en ella.
+    comando: mkdir demo
+    comprobacion: {tipo: carpeta_existe, ruta: src}
+    pegado: {comando: dir, espera: {contiene: [src]}}
+    pegado_ejemplo: "03/06/2026  <DIR> src"
+
+  - id: readme
+    texto: Escribe un README.md que tenga un título.
+    comando: "echo # Mi proyecto > README.md"
+    comprobacion: {tipo: fichero_contiene, ruta: README.md, contiene: ["# "]}
+    pegado: {comando: type README.md, espera: {regex: "^# "}}
+    pegado_ejemplo: "# Mi proyecto"
+
+  - id: repo-git
+    texto: Inicializa el repositorio.
+    comando: git init
+    comprobacion: {tipo: git_repo}
+    pegado_ejemplo: "true"
+
+  - id: dos-commits
+    texto: Haz al menos dos commits.
+    comando: git log --oneline
+    comprobacion: {tipo: git_commits, min: 2}
+    pegado_ejemplo: "2"
+
+  - id: remoto
+    texto: Conecta el repositorio con GitHub.
+    comando: git remote add origin https://github.com/TU-USUARIO/demo.git
+    comprobacion: {tipo: git_remoto, contiene: github.com}
+    pegado_ejemplo: "origin\thttps://github.com/ana/demo.git (fetch)"
+
+  - id: tests-verdes
+    texto: Pasa los tests.
+    comando: uv run pytest -q
+    comprobacion: {tipo: tests_pasan, min_pasados: 1}
+    pegado_ejemplo: ".\n1 passed in 0.02s"
+
+  - id: arbol-limpio
+    texto: Deja todo commiteado.
+    comando: git status
+    comprobacion: {tipo: git_limpio}
+    pegado: {comando: git status --short, espera: {no_contiene: ["??", " M"]}}
+    pegado_ejemplo: "## main"

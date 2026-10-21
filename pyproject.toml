@@ -1,0 +1,62 @@
+[project]
+name = "praxis-runner"
+version = "0.3.0"
+description = "Runner local de Praxis: deja que la PWA compruebe talleres y ejecute los tests de tus proyectos en tu ordenador."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Gonzalo Recio" }]
+license-files = ["LICENSE"]
+requires-python = ">=3.14"
+# Versiones EXACTAS de todo lo que se ejecuta (H-03, docs/SEGURIDAD.md §8): es una aplicación que se instala en
+# el PC de cada amigo con `uv tool install`, que NO lee uv.lock y resolvería de nuevo contra lo último de PyPI.
+# Así la instalación coge siempre lo mismo que la CI ha probado. tests/test_empaquetado.py comprueba que esta
+# lista es exactamente la del lock (sin las de desarrollo). Dependabot propone las subidas con 14 días de espera.
+dependencies = [
+    "fastapi==0.142.2",
+    "uvicorn==0.54.0",
+    # dependencias de las anteriores, fijadas también
+    "annotated-doc==0.0.5",
+    "annotated-types==0.8.0",
+    "anyio==4.15.1",
+    "click==8.5.0",
+    "h11==0.16.0",
+    "idna==3.20",
+    "opentelemetry-api==1.45.1",
+    "pydantic==2.13.5",
+    "pydantic-core==2.46.5",
+    "starlette==1.7.0",
+    "typing-extensions==4.16.0",
+    "typing-inspection==0.4.4",
+]
+
+[project.urls]
+Repository = "https://github.com/graamores/praxis-runner"
+
+[project.scripts]
+praxis-runner = "praxis_runner.cli:main"
+
+[dependency-groups]
+dev = [
+    "duckdb==1.5.*",
+    "httpx2>=2",
+    "pytest>=9",
+    "pyyaml>=6",
+]
+
+[tool.uv]
+# H-03 (docs/SEGURIDAD.md §8): el lock solo coge versiones publicadas hace al menos 14 días (las recién
+# publicadas son las que se retiran cuando salen comprometidas). Se mueve a mano al regenerar el lock.
+# Las de desarrollo (solo para los tests, nunca llegan al PC de los amigos) quedan fuera de la regla.
+exclude-newer = "2026-10-07T00:00:00Z"
+exclude-newer-package = { httpx2 = "2026-10-21T23:59:59Z", httpcore2 = "2026-10-21T23:59:59Z", pluggy = "2026-10-21T23:59:59Z", truststore = "2026-10-21T23:59:59Z" }
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/praxis_runner"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
